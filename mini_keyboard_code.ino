@@ -25,7 +25,10 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
   'z', 'x', 'c', 'v', 'b'};
 
 //special keys
-char joystick_btn = 'm', forward = '0', back = '8', right = '7', left = '6';
+char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
+
+bool previous_key_states[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE];
+bool previous_joystick_btn, previous_forward, previous_back, previous_right, previous_left;
 
 void setup() {
   Serial.begin(9600);
@@ -52,14 +55,35 @@ void setup() {
 
 void read_main_buttons()
 {
-  for(byte s = 0; s < SHIFTING_PINS_SIZE; s++) //För varje input pin
+  for(byte s = 0; s < SHIFTING_PINS_SIZE; s++)
   {
     digitalWrite(shifting_pins[s], LOW);
-    for(byte i = 0; i < INPUT_PINS_SIZE; i++) //Loop trought shifting_pins
+    for(byte i = 0; i < INPUT_PINS_SIZE; i++)
     {
-      byte loop_times = s*i+i;
+      byte loop_times = s * INPUT_PINS_SIZE + i;
       bool now_pressed = !digitalRead(input_pins[i]);
-      now_pressed ? Keyboard.press(keys[loop_times]) : Keyboard.release(keys[loop_times]);
+      bool previous_pressed = previous_key_states[loop_times];
+
+#if 0
+      Serial.print("s:");
+      Serial.print(s);
+      Serial.print(" i: ");
+      Serial.print(i);
+      Serial.print(" loop_times: ");
+      Serial.println(loop_times);
+      delay(100);
+#endif
+
+      if(now_pressed && !previous_pressed)
+      {
+        Keyboard.press(keys[loop_times]);
+      }
+      else if (!now_pressed && previous_pressed)
+      {
+        Keyboard.release(keys[loop_times]);
+      }
+
+      previous_key_states[loop_times] = now_pressed;
     }
     digitalWrite(shifting_pins[s], HIGH);
   }
@@ -67,57 +91,65 @@ void read_main_buttons()
 
 void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
 {
-  //back
-  if(analogRead(VRY) > mid_y + dead_zone)
-  {
-    Keyboard.press(back);
-  }
-        
-  else
-  {
-    Keyboard.release(back);
-  }
+#if 0
+  //Serial.println(!digitalRead(joystick_button_pin));
+  Serial.print("x: ");
+  Serial.println(analogRead(VRX));
+  Serial.print("y: ");
+  Serial.println(analogRead(VRY));
+#endif
 
   //forward
-  if(analogRead(VRY) < mid_y - dead_zone)
+  bool now_forward = analogRead(VRY) < mid_y - dead_zone;
+  if(now_forward && !previous_forward)
   {
     Keyboard.press(forward);
   }
-        
-  else
+  else if (!now_forward && previous_forward)
   {
     Keyboard.release(forward);
   }
+  previous_forward = now_forward;
+
+  //back
+  bool now_back = analogRead(VRY) > mid_y + dead_zone;
+  if(now_back && !previous_back)
+  {
+    Keyboard.press(back);
+  }
+  else if(!now_back && previous_back)
+  {
+    Keyboard.release(back);
+  }
+  previous_back = now_back;
   
   //right
-  if(analogRead(VRX) > mid_x + dead_zone)
+  bool now_right = analogRead(VRX) > mid_x + dead_zone;
+  if(now_right && !previous_right)
   {
     Keyboard.press(right);
-  }
-        
-  else
+  }  
+  else if(!now_right && previous_right)
   {
     Keyboard.release(right);
   }
+  previous_right = now_right;
 
   //left
-  if(analogRead(VRX) < mid_x - dead_zone)
+  bool now_left = analogRead(VRX) < mid_x - dead_zone;
+  if(now_left && !previous_left)
   {
     Keyboard.press(left);
   }
-        
-  else
+  else if (!now_left && previous_left)
   {
     Keyboard.release(left);
   }
+  previous_left = now_left;
 }
-
 
 void loop() {
   read_main_buttons();
-  Serial.println(!digitalRead(joystick_button_pin));
-  Serial.println(analogRead(VRX));
-  Serial.println(analogRead(VRY));
   read_joystick_keys();
   delay(1);
 }
