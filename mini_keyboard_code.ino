@@ -17,6 +17,23 @@ byte input_pins[INPUT_PINS_SIZE] = {10,16,14,15,18};
 byte joystick_button_pin = 19;
 byte VRX = A2, VRY = A3;
 
+#define FORTNITE 0
+#define HALO 1
+
+#define CURRENT_GAME FORTNITE
+
+#if CURRENT_GAME == FORTNITE
+//main keys
+char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
+  KEY_ESC, '2', '3', '4', '5',
+  '1', '2', '3', '4', '5',
+  'a','s', 'd', 'f', 'g',
+  'z', 'x', 'c', 'v', 'b'};
+
+//special keys
+char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
+
+#elif CURRENT_GAME == HALO
 //main keys
 char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
   KEY_ESC, '2', '3', '4', '5',
@@ -26,6 +43,7 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 
 //special keys
 char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
+#endif
 
 bool previous_key_states[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE];
 bool previous_joystick_btn, previous_forward, previous_back, previous_right, previous_left;
@@ -89,6 +107,20 @@ void read_main_buttons()
   }
 }
 
+void read_joystick_button() 
+{ 
+  bool now_joystick_btn = !digitalRead(joystick_button_pin);
+  if(now_joystick_btn && !previous_joystick_btn) 
+  {  
+    Keyboard.press(joystick_btn); 
+  } 
+  else if(!now_joystick_btn && previous_joystick_btn)
+  { 
+    Keyboard.release(joystick_btn); 
+  }
+  previous_joystick_btn = now_joystick_btn;
+} 
+
 void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
 {
 #if 0
@@ -124,7 +156,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   previous_back = now_back;
   
   //right
-  bool now_right = analogRead(VRX) > mid_x + dead_zone;
+  bool now_right = analogRead(VRX) < mid_x - dead_zone;
   if(now_right && !previous_right)
   {
     Keyboard.press(right);
@@ -136,7 +168,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   previous_right = now_right;
 
   //left
-  bool now_left = analogRead(VRX) < mid_x - dead_zone;
+  bool now_left = analogRead(VRX) > mid_x + dead_zone;
   if(now_left && !previous_left)
   {
     Keyboard.press(left);
@@ -151,5 +183,6 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
 void loop() {
   read_main_buttons();
   read_joystick_keys();
+  read_joystick_button();
   delay(1);
 }
