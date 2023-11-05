@@ -1,7 +1,8 @@
 // NOTE: This sketch file is for use with Arduino Leonardo and
 //       Arduino Micro only.
 //
-// Joystic librery by Matthew Heironimus
+// Joystic library by Matthew Heironimus
+// https://github.com/MHeironimus/ArduinoJoystickLibrary
 // 2016-11-24
 //
 // Code by Marcus Cazzola
@@ -32,6 +33,7 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
+#define EMULATE_CONTROLLER
 
 #elif CURRENT_GAME == HALO
 //main keys
@@ -45,12 +47,27 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
 #endif
 
+#ifdef EMULATE_CONTROLLER
+#include <Joystick.h>
+
+Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_GAMEPAD, 
+  SHIFTING_PINS_SIZE * INPUT_PINS_SIZE + 1, 0, // Button Count, Hat Switch Count 
+  true, true, false,                           // X, Y, Z Axis 
+  false, false, false,                         // Rx, Ry, Rz (Rotation) 
+  false, false,                                // rudder, throttle 
+  false, false, false);                        // accelerator, brake, steering 
+#endif
+
 bool previous_key_states[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE];
 bool previous_joystick_btn, previous_forward, previous_back, previous_right, previous_left;
 
 void setup() {
   Serial.begin(9600);
   Keyboard.begin();
+
+#ifdef EMULATE_CONTROLLER
+  Joystick.begin();
+#endif
   
   //input_pins
   for (byte i = 0; i < INPUT_PINS_SIZE; i++)
@@ -95,12 +112,19 @@ void read_main_buttons()
       if(now_pressed && !previous_pressed)
       {
         Keyboard.press(keys[loop_times]);
+
+#ifdef EMULATE_CONTROLLER
+        Joystick.setButton(loop_times, 1);
+#endif
       }
       else if (!now_pressed && previous_pressed)
       {
         Keyboard.release(keys[loop_times]);
-      }
 
+#ifdef EMULATE_CONTROLLER
+        Joystick.setButton(loop_times, 0);
+#endif
+      }
       previous_key_states[loop_times] = now_pressed;
     }
     digitalWrite(shifting_pins[s], HIGH);
@@ -112,27 +136,42 @@ void read_joystick_button()
   bool now_joystick_btn = !digitalRead(joystick_button_pin);
   if(now_joystick_btn && !previous_joystick_btn) 
   {  
-    Keyboard.press(joystick_btn); 
+    Keyboard.press(joystick_btn);
+
+#ifdef EMULATE_CONTROLLER
+    Joystick.setButton(SHIFTING_PINS_SIZE * INPUT_PINS_SIZE, 1);
+#endif
   } 
   else if(!now_joystick_btn && previous_joystick_btn)
   { 
-    Keyboard.release(joystick_btn); 
+    Keyboard.release(joystick_btn);
+
+#ifdef EMULATE_CONTROLLER
+    Joystick.setButton(SHIFTING_PINS_SIZE * INPUT_PINS_SIZE, 0);
+#endif
   }
   previous_joystick_btn = now_joystick_btn;
 } 
 
 void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
 {
+  int x_read = analogRead(VRX);
+  int y_read = analogRead(VRY);
 #if 0
   //Serial.println(!digitalRead(joystick_button_pin));
   Serial.print("x: ");
-  Serial.println(analogRead(VRX));
+  Serial.println(x_read);
   Serial.print("y: ");
-  Serial.println(analogRead(VRY));
+  Serial.println(y_read);
 #endif
 
+#ifdef EMULATE_CONTROLLER
+  Joystick.setXAxis(x_read); 
+  Joystick.setYAxis(y_read);
+#endif 
+
   //forward
-  bool now_forward = analogRead(VRY) < mid_y - dead_zone;
+  bool now_forward = y_read < mid_y - dead_zone;
   if(now_forward && !previous_forward)
   {
     Keyboard.press(forward);
@@ -144,7 +183,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   previous_forward = now_forward;
 
   //back
-  bool now_back = analogRead(VRY) > mid_y + dead_zone;
+  bool now_back = y_read > mid_y + dead_zone;
   if(now_back && !previous_back)
   {
     Keyboard.press(back);
@@ -156,7 +195,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   previous_back = now_back;
   
   //right
-  bool now_right = analogRead(VRX) < mid_x - dead_zone;
+  bool now_right = x_read < mid_x - dead_zone;
   if(now_right && !previous_right)
   {
     Keyboard.press(right);
@@ -168,7 +207,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   previous_right = now_right;
 
   //left
-  bool now_left = analogRead(VRX) > mid_x + dead_zone;
+  bool now_left = x_read > mid_x + dead_zone;
   if(now_left && !previous_left)
   {
     Keyboard.press(left);
