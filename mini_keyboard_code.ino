@@ -26,10 +26,10 @@ byte VRX = A2, VRY = A3;
 #if CURRENT_GAME == FORTNITE
 //main keys
 char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
-  KEY_ESC, '2', '3', '4', '5',
+  KEY_ESC, '2', '3', 'm', 'i',
   '1', '2', '3', '4', '5',
-  'a','s', 'd', 'f', 'g',
-  'z', 'x', 'c', 'v', 'b'};
+  ' ', 'x', 'c', 'z', 'g',
+  KEY_LEFT_CTRL, '2', 'v', 'f', 'y'};
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
