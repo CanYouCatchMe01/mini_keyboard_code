@@ -29,7 +29,7 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
   KEY_ESC, '2', '3', 'm', 'i',
   '1', '2', '3', '4', '5',
   ' ', 'x', 'c', 'z', 'g',
-  KEY_LEFT_CTRL, '2', 'v', 'f', 'y'};
+  KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 'y'};
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
@@ -51,7 +51,7 @@ char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
 #include <Joystick.h>
 
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_GAMEPAD, 
-  SHIFTING_PINS_SIZE * INPUT_PINS_SIZE + 1, 0, // Button Count, Hat Switch Count 
+  0, 0, // Button Count, Hat Switch Count 
   true, true, false,                           // X, Y, Z Axis 
   false, false, false,                         // Rx, Ry, Rz (Rotation) 
   false, false,                                // rudder, throttle 
@@ -113,7 +113,7 @@ void read_main_buttons()
       {
         Keyboard.press(keys[loop_times]);
 
-#ifdef EMULATE_CONTROLLER
+#if 0
         Joystick.setButton(loop_times, 1);
 #endif
       }
@@ -121,7 +121,7 @@ void read_main_buttons()
       {
         Keyboard.release(keys[loop_times]);
 
-#ifdef EMULATE_CONTROLLER
+#if 0
         Joystick.setButton(loop_times, 0);
 #endif
       }
@@ -138,7 +138,7 @@ void read_joystick_button()
   {  
     Keyboard.press(joystick_btn);
 
-#ifdef EMULATE_CONTROLLER
+#if 0
     Joystick.setButton(SHIFTING_PINS_SIZE * INPUT_PINS_SIZE, 1);
 #endif
   } 
@@ -146,7 +146,7 @@ void read_joystick_button()
   { 
     Keyboard.release(joystick_btn);
 
-#ifdef EMULATE_CONTROLLER
+#if 0
     Joystick.setButton(SHIFTING_PINS_SIZE * INPUT_PINS_SIZE, 0);
 #endif
   }
@@ -168,8 +168,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
 #ifdef EMULATE_CONTROLLER
   Joystick.setXAxis(x_read); 
   Joystick.setYAxis(y_read);
-#endif 
-
+#else
   //forward
   bool now_forward = y_read < mid_y - dead_zone;
   if(now_forward && !previous_forward)
@@ -217,6 +216,7 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
     Keyboard.release(left);
   }
   previous_left = now_left;
+#endif 
 }
 
 void loop() {
