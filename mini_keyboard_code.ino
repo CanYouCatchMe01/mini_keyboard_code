@@ -20,8 +20,9 @@ byte VRX = A2, VRY = A3;
 
 #define FORTNITE 0
 #define HALO 1
+#define THE_FINALS 2
 
-#define CURRENT_GAME FORTNITE
+#define CURRENT_GAME THE_FINALS
 
 #if CURRENT_GAME == FORTNITE
 //main keys
@@ -45,6 +46,17 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 
 //special keys
 char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
+
+#elif CURRENT_GAME == THE_FINALS
+//main keys
+char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
+  KEY_ESC, '2', '3', 'm', 'i',
+  '1', '2', '3', '4', 'q',
+  ' ', 'x', 'c', 'z', 'g',
+  KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 'y'};
+
+//special keys
+char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
 #endif
 
 #ifdef EMULATE_CONTROLLER
@@ -59,7 +71,8 @@ Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_GAMEPAD,
 #endif
 
 bool previous_key_states[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE];
-bool previous_joystick_btn, previous_forward, previous_back, previous_right, previous_left;
+bool forward_pressed, back_pressed, right_pressed, left_pressed;
+bool previous_joystick_btn;
 
 void setup() {
   Serial.begin(9600);
@@ -153,14 +166,16 @@ void read_joystick_button()
   previous_joystick_btn = now_joystick_btn;
 } 
 
-void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
+void read_joystick_keys()
 {
+  int dead_zone_press = 200, dead_zone_release = 100, mid_x = 590, mid_y = 570;
+
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
 #if 0
   //Serial.println(!digitalRead(joystick_button_pin));
-  Serial.print("x: ");
-  Serial.println(x_read);
+  //Serial.print("x: ");
+  //Serial.println(x_read);
   Serial.print("y: ");
   Serial.println(y_read);
 #endif
@@ -170,52 +185,60 @@ void read_joystick_keys(int dead_zone = 100, int mid_x = 590, int mid_y = 570)
   Joystick.setYAxis(y_read);
 #else
   //forward
-  bool now_forward = y_read < mid_y - dead_zone;
-  if(now_forward && !previous_forward)
+  bool now_forward_press = y_read < mid_y - dead_zone_press;
+  bool now_forward_release = y_read > mid_y - dead_zone_release;
+  if(now_forward_press && !forward_pressed)
   {
     Keyboard.press(forward);
+    forward_pressed = true;
   }
-  else if (!now_forward && previous_forward)
+  else if (now_forward_release && forward_pressed)
   {
     Keyboard.release(forward);
+    forward_pressed = false;
   }
-  previous_forward = now_forward;
 
   //back
-  bool now_back = y_read > mid_y + dead_zone;
-  if(now_back && !previous_back)
+  bool now_back_press = y_read > mid_y + dead_zone_press;
+  bool now_back_release = y_read < mid_y + dead_zone_release;
+  if(now_back_press && !back_pressed)
   {
     Keyboard.press(back);
+    back_pressed = true;
   }
-  else if(!now_back && previous_back)
+  else if(now_back_release && back_pressed)
   {
     Keyboard.release(back);
+    back_pressed = false;
   }
-  previous_back = now_back;
-  
+
   //right
-  bool now_right = x_read < mid_x - dead_zone;
-  if(now_right && !previous_right)
+  bool now_right_press = x_read < mid_x - dead_zone_press;
+  bool now_right_release = x_read > mid_x - dead_zone_release;
+  if(now_right_press && !right_pressed)
   {
     Keyboard.press(right);
+    right_pressed = true;
   }  
-  else if(!now_right && previous_right)
+  else if(now_right_release && right_pressed)
   {
     Keyboard.release(right);
+    right_pressed = false;
   }
-  previous_right = now_right;
 
   //left
-  bool now_left = x_read > mid_x + dead_zone;
-  if(now_left && !previous_left)
+  bool now_left_press = x_read > mid_x + dead_zone_press;
+  bool now_left_release = x_read < mid_x + dead_zone_release;
+  if(now_left_press && !left_pressed)
   {
     Keyboard.press(left);
+    left_pressed = true;
   }
-  else if (!now_left && previous_left)
+  else if (now_left_release && left_pressed)
   {
     Keyboard.release(left);
+    left_pressed = false;
   }
-  previous_left = now_left;
 #endif 
 }
 
