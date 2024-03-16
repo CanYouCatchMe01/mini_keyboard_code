@@ -34,7 +34,7 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
-#define EMULATE_CONTROLLER
+//#define EMULATE_CONTROLLER
 
 #elif CURRENT_GAME == HALO
 //main keys
@@ -57,6 +57,7 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
+//#define EMULATE_CONTROLLER
 #endif
 
 #ifdef EMULATE_CONTROLLER
@@ -168,14 +169,14 @@ void read_joystick_button()
 
 void read_joystick_keys()
 {
-  int dead_zone_press = 200, dead_zone_release = 100, mid_x = 590, mid_y = 570;
+  int dead_zone_press = 200, dead_zone_release = 100, mid_x = 553, mid_y = 543;
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
 #if 0
   //Serial.println(!digitalRead(joystick_button_pin));
-  //Serial.print("x: ");
-  //Serial.println(x_read);
+  Serial.print("x: ");
+  Serial.println(x_read);
   Serial.print("y: ");
   Serial.println(y_read);
 #endif
