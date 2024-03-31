@@ -105,6 +105,13 @@ void setup() {
   pinMode(joystick_button_pin, INPUT_PULLUP);
   pinMode(VRX, INPUT_PULLUP);
   pinMode(VRY, INPUT_PULLUP);
+
+  int x_read = analogRead(VRX);
+  int y_read = analogRead(VRY);
+  for(int i = 0; i < JOYSTICK_AVERAGE_SIZE; i++){
+      joystick_average_x[i] = x_read;
+      joystick_average_y[i] = y_read;
+  }
 }
 
 void read_main_buttons()
