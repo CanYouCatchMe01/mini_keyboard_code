@@ -18,6 +18,11 @@ byte input_pins[INPUT_PINS_SIZE] = {10,16,14,15,18};
 byte joystick_button_pin = 19;
 byte VRX = A2, VRY = A3;
 
+#define JOYSTICK_AVERAGE_SIZE 20
+int joystick_average_counter = 0;
+int joystick_average_x[ JOYSTICK_AVERAGE_SIZE ];
+int joystick_average_y[ JOYSTICK_AVERAGE_SIZE ];
+
 #define FORTNITE 0
 #define HALO 1
 #define THE_FINALS 2
@@ -169,16 +174,44 @@ void read_joystick_button()
 
 void read_joystick_keys()
 {
-  int dead_zone_press = 200, dead_zone_release = 100, mid_x = 553, mid_y = 543;
+  int dead_zone_press = 320, dead_zone_release = 50, mid_x = 553, mid_y = 543;
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
+
+  //add to the lists
+  if(joystick_average_counter == 0){
+    for(int i = 0; i < JOYSTICK_AVERAGE_SIZE; i++){
+      joystick_average_x[i] = x_read;
+      joystick_average_y[i] = y_read;
+    }
+  }
+  else{
+    int i = joystick_average_counter % JOYSTICK_AVERAGE_SIZE;
+    //Serial.println(i);
+    joystick_average_x[i] = x_read;
+    joystick_average_y[i] = y_read;
+  }
+  joystick_average_counter++;
+
+  //get x average and y average of the list
+  int x_ave = 0; //if JOYSTICK_AVERAGE_SIZE is large this should be another varible type
+  int y_ave = 0;
+  for(int i = 0; i < JOYSTICK_AVERAGE_SIZE; i++){
+      x_ave += joystick_average_x[i];
+      y_ave += joystick_average_y[i];
+  }
+  x_ave /= JOYSTICK_AVERAGE_SIZE;
+  y_ave /= JOYSTICK_AVERAGE_SIZE;
+
+
+
 #if 0
   //Serial.println(!digitalRead(joystick_button_pin));
-  Serial.print("x: ");
-  Serial.println(x_read);
+  //Serial.print("x: ");
+  //Serial.println(x_ave);
   Serial.print("y: ");
-  Serial.println(y_read);
+  Serial.println(y_ave);
 #endif
 
 #ifdef EMULATE_CONTROLLER
@@ -186,8 +219,8 @@ void read_joystick_keys()
   Joystick.setYAxis(y_read);
 #else
   //forward
-  bool now_forward_press = y_read < mid_y - dead_zone_press;
-  bool now_forward_release = y_read > mid_y - dead_zone_release;
+  bool now_forward_press = y_ave < mid_y - dead_zone_press;
+  bool now_forward_release = y_ave > mid_y - dead_zone_release;
   if(now_forward_press && !forward_pressed)
   {
     Keyboard.press(forward);
@@ -200,8 +233,8 @@ void read_joystick_keys()
   }
 
   //back
-  bool now_back_press = y_read > mid_y + dead_zone_press;
-  bool now_back_release = y_read < mid_y + dead_zone_release;
+  bool now_back_press = y_ave > mid_y + dead_zone_press;
+  bool now_back_release = y_ave < mid_y + dead_zone_release;
   if(now_back_press && !back_pressed)
   {
     Keyboard.press(back);
@@ -214,8 +247,8 @@ void read_joystick_keys()
   }
 
   //right
-  bool now_right_press = x_read < mid_x - dead_zone_press;
-  bool now_right_release = x_read > mid_x - dead_zone_release;
+  bool now_right_press = x_ave < mid_x - dead_zone_press;
+  bool now_right_release = x_ave > mid_x - dead_zone_release;
   if(now_right_press && !right_pressed)
   {
     Keyboard.press(right);
@@ -228,8 +261,8 @@ void read_joystick_keys()
   }
 
   //left
-  bool now_left_press = x_read > mid_x + dead_zone_press;
-  bool now_left_release = x_read < mid_x + dead_zone_release;
+  bool now_left_press = x_ave > mid_x + dead_zone_press;
+  bool now_left_release = x_ave < mid_x + dead_zone_release;
   if(now_left_press && !left_pressed)
   {
     Keyboard.press(left);
