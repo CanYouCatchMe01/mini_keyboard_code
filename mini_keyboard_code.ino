@@ -180,18 +180,12 @@ void read_joystick_keys()
   int y_read = analogRead(VRY);
 
   //add to the lists
-  if(joystick_average_counter == 0){
-    for(int i = 0; i < JOYSTICK_AVERAGE_SIZE; i++){
-      joystick_average_x[i] = x_read;
-      joystick_average_y[i] = y_read;
-    }
+  if(joystick_average_counter >= JOYSTICK_AVERAGE_SIZE){
+    joystick_average_counter = 0;
   }
-  else{
-    int i = joystick_average_counter % JOYSTICK_AVERAGE_SIZE;
-    //Serial.println(i);
-    joystick_average_x[i] = x_read;
-    joystick_average_y[i] = y_read;
-  }
+  //Serial.println(joystick_average_counter);
+  joystick_average_x[joystick_average_counter] = x_read;
+  joystick_average_y[joystick_average_counter] = y_read;
   joystick_average_counter++;
 
   //get x average and y average of the list
