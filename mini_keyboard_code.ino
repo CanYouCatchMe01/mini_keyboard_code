@@ -26,8 +26,9 @@ int joystick_average_y[ JOYSTICK_AVERAGE_SIZE ];
 #define FORTNITE 0
 #define HALO 1
 #define THE_FINALS 2
+#define ROGUE 3
 
-#define CURRENT_GAME THE_FINALS
+#define CURRENT_GAME ROGUE
 
 #if CURRENT_GAME == FORTNITE
 //main keys
@@ -59,6 +60,17 @@ char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
   '1', '2', '3', '4', 'q',
   ' ', 'x', 'c', 'z', 'g',
   KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 'y'};
+
+//special keys
+char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
+//#define EMULATE_CONTROLLER
+#elif CURRENT_GAME == ROGUE
+//main keys
+char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
+  KEY_ESC, KEY_F1, KEY_F2, KEY_F3, '0',
+  KEY_TAB, '0', '1', '2', 'f',
+  ' ', KEY_LEFT_SHIFT, 'q', 'e', '0',
+  KEY_LEFT_CTRL, '0', '0', 'p', '0'};
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
@@ -181,7 +193,12 @@ void read_joystick_button()
 
 void read_joystick_keys()
 {
-  int dead_zone_press = 320, dead_zone_release = 50, mid_x = 553, mid_y = 543;
+#if CURRENT_GAME == THE_FINALS
+  int dead_zone_press = 300, dead_zone_release = 100;
+#else
+  int dead_zone_press = 200, dead_zone_release = 70;
+#endif
+  int mid_x = 597, mid_y = 600;
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
@@ -207,10 +224,10 @@ void read_joystick_keys()
 
 
 
-#if 0
+#if 1
   //Serial.println(!digitalRead(joystick_button_pin));
-  //Serial.print("x: ");
-  //Serial.println(x_ave);
+  Serial.print("x: ");
+  Serial.println(x_ave);
   Serial.print("y: ");
   Serial.println(y_ave);
 #endif
