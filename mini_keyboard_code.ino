@@ -28,7 +28,7 @@ int joystick_average_y[ JOYSTICK_AVERAGE_SIZE ];
 #define THE_FINALS 2
 #define ROGUE 3
 
-#define CURRENT_GAME ROGUE
+#define CURRENT_GAME THE_FINALS
 
 #if CURRENT_GAME == FORTNITE
 //main keys
@@ -56,7 +56,7 @@ char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
 #elif CURRENT_GAME == THE_FINALS
 //main keys
 char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
-  KEY_ESC, '2', '3', 'm', 'i',
+  KEY_ESC, '2', '3', KEY_TAB, 'i',
   '1', '2', '3', '4', 'q',
   ' ', 'x', 'c', 'z', 'g',
   KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 'y'};
@@ -67,10 +67,10 @@ char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
 #elif CURRENT_GAME == ROGUE
 //main keys
 char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
-  KEY_ESC, KEY_F1, KEY_F2, KEY_F3, '0',
-  KEY_TAB, '0', '1', '2', 'f',
+  KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F8,
+  KEY_TAB, 'p', '1', '2', 'f',
   ' ', KEY_LEFT_SHIFT, 'q', 'e', '0',
-  KEY_LEFT_CTRL, '0', '0', 'p', '0'};
+  KEY_LEFT_CTRL, '0', '0', 'b', '0'};
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
@@ -81,7 +81,7 @@ char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
 #include <Joystick.h>
 
 Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,JOYSTICK_TYPE_GAMEPAD, 
-  0, 0, // Button Count, Hat Switch Count 
+  20, 0, // Button Count, Hat Switch Count 
   true, true, false,                           // X, Y, Z Axis 
   false, false, false,                         // Rx, Ry, Rz (Rotation) 
   false, false,                                // rudder, throttle 
@@ -115,8 +115,9 @@ void setup() {
 
   //joystick
   pinMode(joystick_button_pin, INPUT_PULLUP);
-  pinMode(VRX, INPUT_PULLUP);
-  pinMode(VRY, INPUT_PULLUP);
+  //PITFALL: INPUT_PULLUP does not work well with analog joystick. Use INPUT
+  pinMode(VRX, INPUT);
+  pinMode(VRY, INPUT);
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
@@ -193,12 +194,8 @@ void read_joystick_button()
 
 void read_joystick_keys()
 {
-#if CURRENT_GAME == THE_FINALS
-  int dead_zone_press = 300, dead_zone_release = 100;
-#else
-  int dead_zone_press = 200, dead_zone_release = 70;
-#endif
-  int mid_x = 597, mid_y = 600;
+  int dead_zone_press = 100, dead_zone_release = 50;
+  int mid_x = 518, mid_y = 509;
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
@@ -226,10 +223,10 @@ void read_joystick_keys()
 
 #if 1
   //Serial.println(!digitalRead(joystick_button_pin));
-  Serial.print("x: ");
-  Serial.println(x_ave);
-  Serial.print("y: ");
-  Serial.println(y_ave);
+  //Serial.print("x: ");
+  Serial.println(x_read);
+  //Serial.print("y: ");
+  //Serial.println(y_read);
 #endif
 
 #ifdef EMULATE_CONTROLLER
