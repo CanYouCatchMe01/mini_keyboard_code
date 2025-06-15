@@ -55,11 +55,19 @@ char joystick_btn = 'm', forward = '9', back = '8', right = '7', left = '6';
 
 #elif CURRENT_GAME == THE_FINALS
 //main keys
+#if true
 char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
-  KEY_ESC, '2', '3', KEY_TAB, 'i',
+  KEY_ESC, '2', 'b', KEY_TAB, 'i',
+  '1', '2', '3', '4', 'q',
+  ' ', KEY_LEFT_SHIFT, 'v', 'f', 'g',
+  KEY_LEFT_CTRL, KEY_LEFT_SHIFT, '0',  'z', 't'};
+#else
+char keys[SHIFTING_PINS_SIZE * INPUT_PINS_SIZE] = {
+  KEY_ESC, '2', 'b', KEY_TAB, 'i',
   '1', '2', '3', '4', 'q',
   ' ', 'x', 'c', 'z', 'g',
-  KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 'y'};
+  KEY_LEFT_CTRL, KEY_LEFT_SHIFT, 'v', 'f', 't'};
+#endif
 
 //special keys
 char joystick_btn = 'm', forward = 'w', back = 's', right = 'd', left = 'a';
@@ -195,7 +203,7 @@ void read_joystick_button()
 void read_joystick_keys()
 {
   int dead_zone_press = 100, dead_zone_release = 50;
-  int mid_x = 518, mid_y = 509;
+  int mid_x = 520, mid_y = 520;
 
   int x_read = analogRead(VRX);
   int y_read = analogRead(VRY);
@@ -223,10 +231,10 @@ void read_joystick_keys()
 
 #if 1
   //Serial.println(!digitalRead(joystick_button_pin));
-  //Serial.print("x: ");
+  Serial.print("x: ");
   Serial.println(x_read);
-  //Serial.print("y: ");
-  //Serial.println(y_read);
+  Serial.print("y: ");
+  Serial.println(y_read);
 #endif
 
 #ifdef EMULATE_CONTROLLER
